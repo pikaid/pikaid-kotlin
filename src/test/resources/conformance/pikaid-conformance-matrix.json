@@ -1,0 +1,463 @@
+{
+  "meta": {
+    "format": "pikaid",
+    "spec_revision": "1.0.4",
+    "spec_tag": "v1.0.4",
+    "spec_commit": "17014d76f568c3ac9f9ce2927c1a018fdbc36d1d",
+    "official_fixture_source": "pikaid/pikaid-php tests/vectors/pikaid-v1.json",
+    "official_fixture_tag": "v1.2.0",
+    "official_fixture_commit": "e3f843edeb5157a5d2d25196cac0d69580810a95",
+    "official_fixture_sha256": "b0c9dfdd063613424414fef5c9065fbd2f81d645d0ab42b34e27cde715613500",
+    "generated_by": "independent Python big-integer reference algorithm; not this SDK's production encoder",
+    "string_length": 26,
+    "binary_length": 17,
+    "timestamp_chars": 7,
+    "randomness_chars": 19,
+    "randomness_bytes": 12,
+    "timestamp_max": 78364164095,
+    "randomness_max": "79228162514264337593543950335"
+  },
+  "valid": [
+    {
+      "name": "all-zero",
+      "timestamp": 0,
+      "randomness_hex": "000000000000000000000000",
+      "text": "00000000000000000000000000",
+      "binary_hex": "0000000000000000000000000000000000"
+    },
+    {
+      "name": "one-one",
+      "timestamp": 1,
+      "randomness_hex": "000000000000000000000001",
+      "text": "00000010000000000000000001",
+      "binary_hex": "0000000001000000000000000000000001"
+    },
+    {
+      "name": "max-values",
+      "timestamp": 78364164095,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "zzzzzzz7oiylpimjg5u2ca1ypr",
+      "binary_hex": "123ede3fffffffffffffffffffffffffff"
+    },
+    {
+      "name": "sample-1700000000",
+      "timestamp": 1700000000,
+      "randomness_hex": "00112233445566778899aabb",
+      "text": "0s44we8002loz3po6mcf6vsn23",
+      "binary_hex": "006553f10000112233445566778899aabb"
+    },
+    {
+      "name": "leading-zero-entropy",
+      "timestamp": 1700000000,
+      "randomness_hex": "000000000000000000000001",
+      "text": "0s44we80000000000000000001",
+      "binary_hex": "006553f100000000000000000000000001"
+    },
+    {
+      "name": "all-ff-entropy",
+      "timestamp": 0,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "00000007oiylpimjg5u2ca1ypr",
+      "binary_hex": "0000000000ffffffffffffffffffffffff"
+    },
+    {
+      "name": "max-timestamp-zero-entropy",
+      "timestamp": 78364164095,
+      "randomness_hex": "000000000000000000000000",
+      "text": "zzzzzzz0000000000000000000",
+      "binary_hex": "123ede3fff000000000000000000000000"
+    },
+    {
+      "name": "max-minus-one-zero-entropy",
+      "timestamp": 78364164094,
+      "randomness_hex": "000000000000000000000000",
+      "text": "zzzzzzy0000000000000000000",
+      "binary_hex": "123ede3ffe000000000000000000000000"
+    },
+    {
+      "name": "one-max-entropy",
+      "timestamp": 1,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "00000017oiylpimjg5u2ca1ypr",
+      "binary_hex": "0000000001ffffffffffffffffffffffff"
+    },
+    {
+      "name": "high-bit-96-bit-entropy",
+      "timestamp": 0,
+      "randomness_hex": "800000000000000000000000",
+      "text": "00000003u9haurb9q2x1650zcw",
+      "binary_hex": "0000000000800000000000000000000000"
+    },
+    {
+      "name": "timestamp-36-power-6",
+      "timestamp": 2176782336,
+      "randomness_hex": "000000000000000000000000",
+      "text": "10000000000000000000000000",
+      "binary_hex": "0081bf1000000000000000000000000000"
+    },
+    {
+      "name": "timestamp-36-power-6-minus-one",
+      "timestamp": 2176782335,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "0zzzzzz7oiylpimjg5u2ca1ypr",
+      "binary_hex": "0081bf0fffffffffffffffffffffffffff"
+    },
+    {
+      "name": "max-timestamp-leading-zero-entropy",
+      "timestamp": 78364164095,
+      "randomness_hex": "000000000000000000000001",
+      "text": "zzzzzzz0000000000000000001",
+      "binary_hex": "123ede3fff000000000000000000000001"
+    },
+    {
+      "name": "timestamp-35-max-entropy",
+      "timestamp": 35,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "000000z7oiylpimjg5u2ca1ypr",
+      "binary_hex": "0000000023ffffffffffffffffffffffff"
+    },
+    {
+      "name": "timestamp-36-max-entropy",
+      "timestamp": 36,
+      "randomness_hex": "ffffffffffffffffffffffff",
+      "text": "00000107oiylpimjg5u2ca1ypr",
+      "binary_hex": "0000000024ffffffffffffffffffffffff"
+    },
+    {
+      "name": "random-seeded-01",
+      "timestamp": 7036242447,
+      "randomness_hex": "ea19516d44726a97d72b7716",
+      "text": "38d73f370vaw3qlrdzrjntzw9i",
+      "binary_hex": "01a3648a0fea19516d44726a97d72b7716",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-02",
+      "timestamp": 29077708677,
+      "randomness_hex": "3f6f267212364b6ac139f2fb",
+      "text": "dcw47lx1wiqjtk2cj9dw5ia2uz",
+      "binary_hex": "06c52a9f853f6f267212364b6ac139f2fb",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-03",
+      "timestamp": 46537543352,
+      "randomness_hex": "a529f5b9563e060e3259b677",
+      "text": "ldn929k4yennvl2k2k2keb74on",
+      "binary_hex": "0ad5da8eb8a529f5b9563e060e3259b677",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-04",
+      "timestamp": 73077759320,
+      "randomness_hex": "2c4bc51c3952ce0929560cda",
+      "text": "xkklzyw1buinxd8c3t4usu7jkq",
+      "binary_hex": "1103c61d582c4bc51c3952ce0929560cda",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-05",
+      "timestamp": 23995276215,
+      "randomness_hex": "207686a563796e888c8e0b76",
+      "text": "b0u61mf0z2dh4abrw7zviof2pi",
+      "binary_hex": "05963adbb7207686a563796e888c8e0b76",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-06",
+      "timestamp": 13999709931,
+      "randomness_hex": "d20d11a0af4ee2ed504a1534",
+      "text": "6fj2dbf6aw5wwc97cfvaecpjxw",
+      "binary_hex": "0342729eebd20d11a0af4ee2ed504a1534",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-07",
+      "timestamp": 12218401970,
+      "randomness_hex": "ab29e9728c42e30b4f09b673",
+      "text": "5m2iraq54vywdsg678w97j6mib",
+      "binary_hex": "02d84604b2ab29e9728c42e30b4f09b673",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    },
+    {
+      "name": "random-seeded-08",
+      "timestamp": 68543387618,
+      "randomness_hex": "8f6b96aafcdda849b740cc4d",
+      "text": "vhkyode4ax4dy83ui0u64bkabx",
+      "binary_hex": "0ff58117e28f6b96aafcdda849b740cc4d",
+      "note": "generated with Python random.Random(0x5EED2026)"
+    }
+  ],
+  "invalid_text": [
+    {
+      "name": "empty",
+      "text": "",
+      "well_formed": false,
+      "reason": "zero-length text"
+    },
+    {
+      "name": "too-short-25",
+      "text": "0000000000000000000000000",
+      "well_formed": false,
+      "reason": "25 characters"
+    },
+    {
+      "name": "too-long-27",
+      "text": "000000000000000000000000000",
+      "well_formed": false,
+      "reason": "27 characters"
+    },
+    {
+      "name": "too-long-1000",
+      "text": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "well_formed": false,
+      "reason": "1000 characters"
+    },
+    {
+      "name": "uppercase-prefix",
+      "text": "Z0000000000000000000000000",
+      "well_formed": false,
+      "reason": "uppercase alphabet is not allowed"
+    },
+    {
+      "name": "uppercase-suffix",
+      "text": "0000000A000000000000000000",
+      "well_formed": false,
+      "reason": "uppercase alphabet is not allowed"
+    },
+    {
+      "name": "non-ascii-accented",
+      "text": "0000000é000000000000000000",
+      "well_formed": false,
+      "reason": "non-ASCII character"
+    },
+    {
+      "name": "zero-width-space",
+      "text": "0000000​000000000000000000",
+      "well_formed": false,
+      "reason": "zero-width Unicode character"
+    },
+    {
+      "name": "nul",
+      "text": "0000000\u0000000000000000000000",
+      "well_formed": false,
+      "reason": "NUL character"
+    },
+    {
+      "name": "space",
+      "text": "0000000 000000000000000000",
+      "well_formed": false,
+      "reason": "space character"
+    },
+    {
+      "name": "tab",
+      "text": "0000000\t000000000000000000",
+      "well_formed": false,
+      "reason": "tab character"
+    },
+    {
+      "name": "crlf",
+      "text": "0000000\r\n00000000000000000",
+      "well_formed": false,
+      "reason": "CR and LF characters"
+    },
+    {
+      "name": "punctuation-dash",
+      "text": "0000000-000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-underscore",
+      "text": "0000000_000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-slash",
+      "text": "0000000/000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-colon",
+      "text": "0000000:000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-plus",
+      "text": "0000000+000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-at",
+      "text": "0000000@000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "punctuation-tilde",
+      "text": "0000000~000000000000000000",
+      "well_formed": false,
+      "reason": "punctuation"
+    },
+    {
+      "name": "randomness-exactly-2-to-96",
+      "text": "00000007oiylpimjg5u2ca1yps",
+      "well_formed": true,
+      "reason": "shape valid; randomness equals 2^96 which exceeds 96 bits"
+    },
+    {
+      "name": "randomness-36-to-19-minus-1",
+      "text": "0000000zzzzzzzzzzzzzzzzzzz",
+      "well_formed": true,
+      "reason": "shape valid; randomness is 36^19-1 which exceeds 2^96-1"
+    },
+    {
+      "name": "timestamp-max-randomness-overflow",
+      "text": "zzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "well_formed": true,
+      "reason": "shape valid; timestamp max with overflowing randomness"
+    },
+    {
+      "name": "truncation-prefix-valid-too-long",
+      "text": "0s44we8002loz3po6mcf6vsn230",
+      "well_formed": false,
+      "reason": "27 characters, valid 26-character prefix"
+    },
+    {
+      "name": "truncation-suffix-missing",
+      "text": "0s44we8002loz3po6mcf6vsn2",
+      "well_formed": false,
+      "reason": "25 characters, one character removed"
+    }
+  ],
+  "invalid_binary": [
+    {
+      "name": "empty",
+      "binary_hex": "",
+      "reason": "zero bytes"
+    },
+    {
+      "name": "one-byte",
+      "binary_hex": "00",
+      "reason": "1 byte"
+    },
+    {
+      "name": "five-bytes",
+      "binary_hex": "0000000000",
+      "reason": "5 bytes"
+    },
+    {
+      "name": "sixteen-bytes",
+      "binary_hex": "00000000000000000000000000000000",
+      "reason": "16 bytes"
+    },
+    {
+      "name": "eighteen-bytes",
+      "binary_hex": "000000000000000000000000000000000000",
+      "reason": "18 bytes"
+    },
+    {
+      "name": "thirty-two-bytes",
+      "binary_hex": "0000000000000000000000000000000000000000000000000000000000000000",
+      "reason": "32 bytes"
+    },
+    {
+      "name": "timestamp-max-plus-one",
+      "binary_hex": "123ede4000000000000000000000000000",
+      "reason": "timestamp above 36^7-1"
+    },
+    {
+      "name": "timestamp-40-bit-max",
+      "binary_hex": "ffffffffff000000000000000000000000",
+      "reason": "timestamp 2^40-1 exceeds 36^7-1"
+    },
+    {
+      "name": "timestamp-40-bit-max-with-entropy",
+      "binary_hex": "ffffffffffffffffffffffffffffffffff",
+      "reason": "timestamp 2^40-1 exceeds 36^7-1"
+    }
+  ],
+  "ordering": {
+    "entropy_hex": "00112233445566778899aabb",
+    "ascending_timestamps": [
+      0,
+      1,
+      2,
+      35,
+      36,
+      2176782336,
+      2176782337,
+      78364164094,
+      78364164095
+    ],
+    "cases": [
+      {
+        "name": "order-0",
+        "timestamp": 0,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "0000000002loz3po6mcf6vsn23",
+        "binary_hex": "000000000000112233445566778899aabb"
+      },
+      {
+        "name": "order-1",
+        "timestamp": 1,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "0000001002loz3po6mcf6vsn23",
+        "binary_hex": "000000000100112233445566778899aabb"
+      },
+      {
+        "name": "order-2",
+        "timestamp": 2,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "0000002002loz3po6mcf6vsn23",
+        "binary_hex": "000000000200112233445566778899aabb"
+      },
+      {
+        "name": "order-35",
+        "timestamp": 35,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "000000z002loz3po6mcf6vsn23",
+        "binary_hex": "000000002300112233445566778899aabb"
+      },
+      {
+        "name": "order-36",
+        "timestamp": 36,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "0000010002loz3po6mcf6vsn23",
+        "binary_hex": "000000002400112233445566778899aabb"
+      },
+      {
+        "name": "order-2176782336",
+        "timestamp": 2176782336,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "1000000002loz3po6mcf6vsn23",
+        "binary_hex": "0081bf100000112233445566778899aabb"
+      },
+      {
+        "name": "order-2176782337",
+        "timestamp": 2176782337,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "1000001002loz3po6mcf6vsn23",
+        "binary_hex": "0081bf100100112233445566778899aabb"
+      },
+      {
+        "name": "order-78364164094",
+        "timestamp": 78364164094,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "zzzzzzy002loz3po6mcf6vsn23",
+        "binary_hex": "123ede3ffe00112233445566778899aabb"
+      },
+      {
+        "name": "order-78364164095",
+        "timestamp": 78364164095,
+        "randomness_hex": "00112233445566778899aabb",
+        "text": "zzzzzzz002loz3po6mcf6vsn23",
+        "binary_hex": "123ede3fff00112233445566778899aabb"
+      }
+    ]
+  }
+}

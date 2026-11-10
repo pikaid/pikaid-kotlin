@@ -1,0 +1,256 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+# The library is JVM-only and targets Java 17 bytecode. The matrix covers the oldest
+# supported runtime (17) and the build toolchain used for releases (21), on all three
+# desktop platforms, to catch platform-specific CSPRNG and line-ending problems.
+jobs:
+  build:
+    name: ${{ matrix.os }} / JDK ${{ matrix.java }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: [17, 21]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # `build` runs compile, tests, ktlintCheck, and koverVerify through the `check` task.
+      # `--no-build-cache` ensures the test task always executes in CI instead of being
+      # restored from a previous run's cache. Publishing metadata is generated too.
+      - name: Build and verify
+        shell: bash
+        run: >
+          ./gradlew build generatePomFileForMavenJavaPublication
+          -PjvmToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain
+
+      # `build` already runs verifyArchiveHygiene; this step additionally guards the
+      # release metadata against a snapshot version or a missing classified archive.
+      - name: Verify release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          pom=build/publications/mavenJava/pom-default.xml
+          test -f "$pom"
+          if grep -q 'SNAPSHOT' "$pom"; then
+            echo "::error::publication POM uses a snapshot version"
+            exit 1
+          fi
+          for classifier in sources javadoc; do
+            ls build/libs/*-"$classifier".jar >/dev/null
+          done
+
+      # The published artifact must stay consumable by Java 17. A toolchain bump that
+      # silently raises the class-file version is a release blocker, not a warning.
+      - name: Verify Java 17 bytecode
+        shell: bash
+        run: |
+          set -euo pipefail
+          jar=$(find build/libs -maxdepth 1 -name 'pikaid-kotlin-*.jar' \
+            ! -name '*-sources.jar' ! -name '*-javadoc.jar' -print -quit)
+          test -n "$jar"
+          javap -verbose -classpath "$jar" dev.pikaid.PikaId | grep -q 'major version: 61'
+
+  # Runs the pinned official shared conformance suite through a test-only adapter that
+  # calls the real library. The suite revision and every fixture checksum are verified
+  # before a single case executes, and the automated-only exit code gates the build.
+  conformance:
+    name: Official conformance suite (pinned 1.0.0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Check out pinned pikaid-specs conformance suite
+        uses: actions/checkout@v4
+        with:
+          repository: pikaid/pikaid-specs
+          ref: 059780cc0e5b113443812720d95c630649bf3aa3
+          path: .ai/official/pikaid-specs
+          persist-credentials: false
+
+      - name: Verify pinned suite commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual=$(git -C .ai/official/pikaid-specs rev-parse HEAD)
+          test "$actual" = "059780cc0e5b113443812720d95c630649bf3aa3"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install suite tooling
+        run: python -m pip install -r .ai/official/pikaid-specs/conformance/tools/requirements.txt
+
+      # Fail closed on checksum, manifest, schema, revision, or fixture mismatch.
+      - name: Verify suite fixtures, schema, and independent oracle
+        working-directory: .ai/official/pikaid-specs/conformance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/verify_vectors.py \
+            --expect-status OFFICIAL \
+            --expect-package-revision 1.0.0 \
+            --expect-spec-revision 1.0.4
+          PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tools/tests -v
+          node tools/verify_oracle_node.mjs
+
+      - name: Build test-only conformance adapter
+        shell: bash
+        run: >
+          ./gradlew conformanceAdapterJar
+          -PjvmToolchain=21 --no-daemon --no-build-cache --console=plain
+
+      # Exit code 0 means every automated case passed. It is not a security certification.
+      - name: Run official automated conformance suite
+        working-directory: .ai/official/pikaid-specs/conformance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/run_adapter.py \
+            --automated-only \
+            --report-json "$GITHUB_WORKSPACE/build/conformance/official-report.json" \
+            -- java -jar "$GITHUB_WORKSPACE/build/conformance/pikaid-conformance-adapter.jar"
+
+      - name: Assert the automated report is a real pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import sys
+
+          report = json.load(open('build/conformance/official-report.json', encoding='utf-8'))
+          checks = {
+              'status': report.get('status', ''),
+              'exit_code': report.get('exit_code'),
+              'automated_passed': report.get('automated_passed'),
+              'automated_only': report.get('automated_only'),
+              'certification': report.get('certification'),
+              'errors': report.get('errors'),
+              'fatal': report.get('fatal'),
+          }
+          problems = []
+          if not str(checks['status']).startswith('AUTOMATED_PASS'):
+              problems.append('status is not an automated pass: %r' % (checks['status'],))
+          if checks['exit_code'] != 0:
+              problems.append('exit_code is not 0')
+          if checks['automated_passed'] is not True or checks['automated_only'] is not True:
+              problems.append('automated pass flags are not both true')
+          if checks['certification'] != 'NOT_A_CONFORMANCE_CERTIFICATION':
+              problems.append('report overclaims certification')
+          if checks['errors'] or checks['fatal']:
+              problems.append('report contains errors or a fatal failure')
+          expected = {
+              'valid': 596,
+              'invalid-string': 258,
+              'invalid-binary': 33,
+              'ordering': 186,
+              'generation': 12,
+          }
+          counts = report.get('counts', {})
+          for name, total in expected.items():
+              row = counts.get(name, {})
+              if row.get('passed') != total or row.get('failed') != 0 or row.get('not_applicable') != 0:
+                  problems.append('%s did not execute the full corpus: %r' % (name, row))
+          properties = counts.get('properties', {})
+          if properties.get('failed') != 0 or properties.get('passed', 0) < 14:
+              problems.append('properties suite did not pass: %r' % (properties,))
+          freshness = report.get('generation_freshness', {})
+          if freshness.get('distinct', 0) < freshness.get('minimum_required', 1):
+              problems.append('generation freshness below the required floor: %r' % (freshness,))
+          if freshness.get('duplicate_values') != 0:
+              problems.append('generation freshness found duplicate values')
+          if problems:
+              for problem in problems:
+                  print('::error::' + problem)
+              sys.exit(1)
+          print('official automated conformance report verified')
+          PY
+
+      - name: Upload official conformance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: official-conformance-report
+          path: build/conformance/official-report.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Resolves the published artifact from mavenLocal in separate Gradle builds, so the
+  # library's POM, module metadata, and Kotlin stdlib graph are exercised as consumers
+  # see them. Both Java 17 and Java 21 runtimes are covered.
+  consumers:
+    name: External consumers / JDK ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [17, 21]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish to the local Maven repository
+        shell: bash
+        run: >
+          ./gradlew publishToMavenLocal
+          -PjvmToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain
+
+      - name: Compile and run the Java consumer
+        shell: bash
+        run: >
+          ./gradlew -p ci/consumers/java run
+          -PconsumerToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain
+
+      - name: Compile and run the Kotlin consumer
+        shell: bash
+        run: >
+          ./gradlew -p ci/consumers/kotlin run
+          -PconsumerToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain

@@ -1,0 +1,10 @@
+.DS_Store
+.gradle/
+build/
+out/
+.idea/
+*.iml
+local.properties
+
+# Local-only working artifacts: never tracked, never packaged.
+/.ai/
