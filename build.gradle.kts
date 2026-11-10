@@ -5,6 +5,7 @@ plugins {
     kotlin("jvm") version "2.2.21"
     `java-library`
     `maven-publish`
+    id("com.vanniktech.maven.publish.base") version "0.37.0"
     signing
     id("org.jetbrains.kotlinx.kover") version "0.9.11"
     id("org.jlleitschuh.gradle.ktlint") version "14.2.0"
@@ -152,6 +153,15 @@ publishing {
             }
         }
     }
+}
+
+
+// Reuse the existing mavenJava publication, including the Dokka Javadoc JAR,
+// and let the Central Portal validate and automatically release the bundle.
+// The base plugin does not replace or duplicate the manually configured
+// publication, and unsigned publishToMavenLocal remains available.
+mavenPublishing {
+    publishToMavenCentral(automaticRelease = true)
 }
 
 // Sign only when release credentials are supplied, so ordinary builds and
