@@ -1,43 +1,46 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pikaid/pikaid-specs/v1.0.4/logo.png" alt="pikaid" width="300" />
+  <a href="https://github.com/pikaid/pikaid-specs">
+    <img src="https://raw.githubusercontent.com/pikaid/pikaid-specs/v1.0.4/logo.png" alt="pikaid" width="300">
+  </a>
 </p>
 
 <p align="center">
   <strong>Small · Sortable · Secure ID generator</strong>
 </p>
 
-# pikaid — Official Kotlin Implementation
+<div align="center">
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF.svg?logo=kotlin&logoColor=white)](#requirements)
-[![JVM](https://img.shields.io/badge/JVM-17%2B-important.svg)](#requirements)
-[![CI](https://github.com/pikaid/pikaid-kotlin/actions/workflows/ci.yml/badge.svg)](https://github.com/pikaid/pikaid-kotlin/actions/workflows/ci.yml)
+[![Kotlin](https://img.shields.io/badge/language-Kotlin-7F52FF.svg)](https://github.com/pikaid/pikaid-kotlin)
+[![CI](https://github.com/pikaid/pikaid-kotlin/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/pikaid/pikaid-kotlin/actions/workflows/ci.yml)
+[![Official implementation](https://img.shields.io/badge/official-implementation-2e7d32.svg)](https://github.com/pikaid/pikaid-specs)
+[![Specification 1.0.4](https://img.shields.io/badge/spec-1.0.4-4b56a6.svg)](https://github.com/pikaid/pikaid-specs/tree/v1.0.4)
 
-**pikaid** is a compact, chronologically sortable, collision-resistant identifier for
-databases, APIs, and distributed systems. This repository is the **official Kotlin/JVM
-implementation** of the immutable, unversioned [pikaid format](https://github.com/pikaid/pikaid-specs),
-documented in specification revision **1.0.4**.
+</div>
 
-> **Status: stable 1.0.0.** This is the first stable release of the Kotlin implementation.
-> The `1.0.0` artifacts are prepared and verified locally but have **not** been published to
-> Maven Central or any other registry yet; installation from source is shown below.
+**pikaid** is the **official Kotlin implementation** of a compact, chronologically sortable, collision-resistant identifier format for databases, APIs, and distributed systems.
 
-## Format at a glance
+This is the immutable, unversioned [pikaid format](https://github.com/pikaid/pikaid-specs/tree/v1.0.4), documented in specification revision **1.0.4**.
 
-| Property | Value |
-| --- | --- |
-| Text form | exactly **26 lowercase ASCII Base36** characters |
-| Binary form | exactly **17 bytes** |
-| Timestamp | 7 Base36 characters / 5 unsigned big-endian bytes, whole Unix seconds |
-| Timestamp range | `0 .. 78,364,164,095` (`36^7 - 1`) |
-| Randomness | 19 Base36 characters / 12 bytes, exactly 96 bits |
-| Ordering | ASCII-compatible lexicographic, which equals unsigned binary order |
+## ✨ Why pikaid?
 
-A pikaid is not monotonic within a single second: two IDs generated in the same second
-sort by their random suffix, not by generation order. The format is immutable and
-unversioned; specification revisions clarify it without changing generated values.
+- **Short:** Compact, readable IDs for URLs, logs, and API resources.
+- **Sortable:** Lexicographically ordered by timestamp, with **one-second precision**.
+- **Collision-resistant:** 96 bits of cryptographic randomness make collisions extremely unlikely, never impossible.
+- **Storage-friendly:** Use `BINARY(17)` or readable `CHAR(26)`.
+- **Distributed-friendly:** No central sequence generator or coordination required.
 
-## Requirements
+## 🧬 Identifier format
+
+A pikaid contains **26 lowercase Base36 characters**: a **7-character Unix-seconds timestamp** followed by **19 characters encoding 96 bits of cryptographic randomness**. Its binary form is **17 bytes**: 5 unsigned big-endian timestamp bytes followed by 12 randomness bytes.
+
+![Identifier structure](https://raw.githubusercontent.com/pikaid/pikaid-specs/v1.0.4/structure.svg)
+
+> **Ordering:** Different seconds sort chronologically. Within the same second, randomness—not issuance order—decides the order.
+
+> **Security:** These are identifiers, **not secrets**, session credentials, authentication tokens, or API keys.
+
+## ⚙️ Requirements
 
 - **Java 17+** at runtime (the published bytecode targets JVM 17).
 - **JDK 21** to build by default; the Gradle build uses a Java 21 toolchain and compiles
@@ -47,7 +50,14 @@ unversioned; specification revisions clarify it without changing generated value
 
 Kotlin Multiplatform and JavaScript/Native targets are **not** supported or claimed.
 
-## Installation
+## 📦 Installation
+
+From the public source repository:
+
+```sh
+git clone https://github.com/pikaid/pikaid-kotlin.git
+cd pikaid-kotlin
+```
 
 No registry release has been published yet. To consume a local build:
 
@@ -68,58 +78,57 @@ dependencies {
 }
 ```
 
-## Quick start (Kotlin)
+## 🚀 Basic Usage
+
+Put this example in a Kotlin `main.kt` in a consumer project with the dependency configured above:
 
 ```kotlin
 import dev.pikaid.PikaId
 import dev.pikaid.PikaIdFormatException
 
-// Generate from the current time and 96 bits from the platform CSPRNG.
-val id = PikaId.generate()
-println(id)                 // e.g. 0s44we8002loz3po6mcf6vsn23
-println(id.timestamp)       // whole Unix seconds
-println(id.randomnessHex)   // exactly 24 lowercase hex characters
+fun main() {
+    // Generate from the current time and 96 bits from the platform CSPRNG.
+    val id = PikaId.generate()
+    println(id)                 // e.g. 0s44we8002loz3po6mcf6vsn23
+    println(id.timestamp)       // whole Unix seconds
+    println(id.randomnessHex)   // exactly 24 lowercase hex characters
 
-// Strict parsing: no trimming, case folding, or other coercion.
-val parsed = PikaId.parse(id.toString())
-check(parsed == id)
+    // Strict parsing: no trimming, case folding, or other coercion.
+    val parsed = PikaId.parse(id.toString())
+    check(parsed == id)
 
-// Lossless 17-byte round trip.
-val binary: ByteArray = id.toByteArray()
-check(PikaId.fromBinary(binary) == id)
+    // Lossless 17-byte round trip.
+    val binary: ByteArray = id.toByteArray()
+    check(PikaId.fromBinary(binary) == id)
 
-// Generate for an explicit timestamp.
-val fixed = PikaId.generate(1_700_000_000L)
-check(fixed.timestamp == 1_700_000_000L)
+    // Generate for an explicit timestamp.
+    val fixed = PikaId.generate(1_700_000_000L)
+    check(fixed.timestamp == 1_700_000_000L)
 
-// Non-throwing variants return null for invalid input.
-check(PikaId.parseOrNull("not-a-pikaid") == null)
-check(PikaId.fromBinaryOrNull(ByteArray(16)) == null)
+    // Non-throwing variants return null for invalid input.
+    check(PikaId.parseOrNull("not-a-pikaid") == null)
+    check(PikaId.fromBinaryOrNull(ByteArray(16)) == null)
 
-try {
-    PikaId.parse("000000A0000000000000000000")
-} catch (failure: PikaIdFormatException) {
-    println(failure.message) // invalid character at index 6: U+0041; expected [0-9a-z]
+    try {
+        PikaId.parse("000000A0000000000000000000")
+    } catch (failure: PikaIdFormatException) {
+        println(failure.message) // invalid character at index 6: U+0041; expected [0-9a-z]
+    }
 }
 ```
 
-## Java usage
+## 💡 Example Use Case
 
-Kotlin companion members are reached through `PikaId.Companion`:
+Use pikaid to identify **users, orders, invoices, uploads, events, and API resources**. Independent services can generate compact IDs without a shared counter, while timestamp-based ordering helps with indexing, sorting, and logs.
 
-```java
-import dev.pikaid.PikaId;
+## 📚 Canonical specification
 
-PikaId id = PikaId.Companion.generate();
-long timestamp = id.getTimestamp();
-byte[] entropy = id.getRandomness();      // defensive copy, 12 bytes
-byte[] binary = id.toByteArray();         // defensive copy, 17 bytes
+- [Canonical specification](https://github.com/pikaid/pikaid-specs)
+- [Revision 1.0.4](https://github.com/pikaid/pikaid-specs/tree/v1.0.4)
 
-PikaId restored = PikaId.Companion.fromBinary(binary);
-boolean valid = PikaId.Companion.isValid("0s44we8002loz3po6mcf6vsn23");
-```
+Specification revisions describe the format; they do not change the encoded identifiers.
 
-## Public API
+## 🧩 API Reference
 
 | Member | Purpose |
 | --- | --- |
@@ -146,7 +155,19 @@ Invalid text or binary input throws `PikaIdFormatException` (an
 `PikaIdGenerationException` (an `IllegalStateException`); no partial or fallback ID is
 returned.
 
-## Validation rules
+Kotlin companion members are reached through `PikaId.Companion`:
+
+```java
+import dev.pikaid.PikaId;
+
+PikaId id = PikaId.Companion.generate();
+long timestamp = id.getTimestamp();
+byte[] entropy = id.getRandomness();      // defensive copy, 12 bytes
+byte[] binary = id.toByteArray();         // defensive copy, 17 bytes
+
+PikaId restored = PikaId.Companion.fromBinary(binary);
+boolean valid = PikaId.Companion.isValid("0s44we8002loz3po6mcf6vsn23");
+```
 
 The Kotlin implementation rejects, without coercion:
 
@@ -162,7 +183,7 @@ The Kotlin implementation rejects, without coercion:
 formed but **not** valid, because its randomness overflows 96 bits. Use `isValid` or
 `parse` for semantic validation.
 
-## Ordering
+## 🔄 Order Guarantee
 
 Ordering uses the canonical text and is identical to unsigned bytewise ordering of the
 17-byte form:
@@ -171,17 +192,23 @@ Ordering uses the canonical text and is identical to unsigned bytewise ordering 
 - IDs with the same timestamp sort by randomness, which is **not** generation order;
 - sorting is **not** monotonic within one second, and there is no sub-second precision.
 
-## Security notes
+## 🛢 Storage Recommendations
 
-- Randomness comes from the platform `java.security.SecureRandom` (12 independent bytes);
-  generation fails closed if the source throws or returns the wrong number of bytes.
-- A pikaid is **not** an authentication token, password, or secret. Do not use it as one.
-- Uniqueness and secrecy are **not** guaranteed. The 96-bit random suffix makes collisions
-  very unlikely, but applications that require uniqueness must still enforce it (for
-  example with a database constraint).
-- The timestamp reveals creation time to one-second precision.
+| Representation | Size | Recommended for |
+| --- | ---: | --- |
+| **BINARY(17)** | 17 bytes | Compact primary keys and indexes |
+| **CHAR(26)** | 26 characters | Readable SQL, debugging, URLs, and logs |
 
-## Building and testing
+Use an **ASCII bytewise/binary collation** for text columns (for example, `ascii_bin` on MariaDB/MySQL). Case-insensitive or locale-aware sorting is not a substitute for canonical bytewise comparison.
+
+## ✅ Verification and release status
+
+The [CI workflow](https://github.com/pikaid/pikaid-kotlin/actions/workflows/ci.yml) runs native tests, pinned automated conformance checks, and language-specific quality gates. To run the native checks locally from a checkout, use `./gradlew build`.
+
+**Automated passing tests are not a security certification.** The independent CSPRNG source and failure-path audits (`P-GENERATE-RNG-SOURCE` and `P-GENERATE-RNG-FAILURE`) still require separate human evidence.
+
+<details>
+<summary>Platform, tooling, and conformance details</summary>
 
 ```bash
 ./gradlew build              # compile, test, ktlint, Kover, and archive hygiene
@@ -194,37 +221,6 @@ Ordering uses the canonical text and is identical to unsigned bytewise ordering 
 The build defaults to a JDK 21 toolchain. Set `JAVA_HOME` if your default JDK differs, or
 select the JDK 17 toolchain explicitly with `./gradlew build -PjvmToolchain=17`. Tests run
 on the JVM only.
-
-## Releasing
-
-The `1.0.0` release produces three archives: the library JAR, a sources JAR, and a Javadoc
-JAR generated from the Kotlin KDoc. Archive entry timestamps and ordering are fixed, so the
-library and sources JARs are byte-for-byte identical when rebuilt with either the JDK 17 or
-the JDK 21 toolchain. The Javadoc JAR is reproducible for a given toolchain but not across
-toolchains: Dokka embeds links to that JDK's generated API documentation, so JDK 17 and JDK
-21 produce the same content with different `docs.oracle.com` version links. `build` fails if
-any archive contains a local-only `.ai/` entry.
-
-Publishing to Maven Central is a manual, credentialed step and is **not** performed by CI.
-Before publishing, the owner must confirm:
-
-- the `dev.pikaid` namespace is verified for the target registry account;
-- a non-snapshot version (`1.0.0`) and the `v1.0.0` Git tag are approved;
-- a PGP signing key and registry credentials are available.
-
-With `SIGNING_KEY` and `SIGNING_PASSWORD` set, every publication is signed; without them,
-ordinary builds and `publishToMavenLocal` run unsigned.
-
-```bash
-./gradlew clean build dokkaJavadocJar   # tests, lint, coverage, and archive hygiene
-./gradlew publishToMavenLocal           # install 1.0.0 into the local Maven cache
-```
-
-No registry repository is configured in this build, so `./gradlew publish` uploads nothing.
-Adding the registry repository, its credentials, and the signed release bundle is a separate
-owner-approved step.
-
-## Conformance
 
 The authoritative conformance evidence is the shared official suite: **pikaid-specs
 conformance revision `1.0.0`** (`status=OFFICIAL`, spec revision `1.0.4`), pinned to commit
@@ -282,8 +278,62 @@ fixture. It is not the authoritative conformance corpus; its valid and invalid v
 subset of the shared suite, and the one extra malformed case (`_`) is covered by the
 independent 65-case matrix.
 
-## Specification and license
+The `1.0.0` release produces three archives: the library JAR, a sources JAR, and a Javadoc
+JAR generated from the Kotlin KDoc. Archive entry timestamps and ordering are fixed, so the
+library and sources JARs are byte-for-byte identical when rebuilt with either the JDK 17 or
+the JDK 21 toolchain. The Javadoc JAR is reproducible for a given toolchain but not across
+toolchains: Dokka embeds links to that JDK's generated API documentation, so JDK 17 and JDK
+21 produce the same content with different `docs.oracle.com` version links. `build` fails if
+any archive contains a local-only `.ai/` entry.
 
-- Canonical specification: [pikaid-specs revision 1.0.4](https://github.com/pikaid/pikaid-specs/tree/v1.0.4),
-  pinned at commit `17014d76f568c3ac9f9ce2927c1a018fdbc36d1d`.
-- This implementation is released under the [MIT License](LICENSE).
+Publishing to Maven Central is a manual, credentialed step and is **not** performed by CI.
+Before publishing, the owner must confirm:
+
+- the `dev.pikaid` namespace is verified for the target registry account;
+- a non-snapshot version (`1.0.0`) and the `v1.0.0` Git tag are approved;
+- a PGP signing key and registry credentials are available.
+
+With `SIGNING_KEY` and `SIGNING_PASSWORD` set, every publication is signed; without them,
+ordinary builds and `publishToMavenLocal` run unsigned.
+
+```bash
+./gradlew clean build dokkaJavadocJar   # tests, lint, coverage, and archive hygiene
+./gradlew publishToMavenLocal           # install 1.0.0 into the local Maven cache
+```
+
+No registry repository is configured in this build, so `./gradlew publish` uploads nothing.
+Adding the registry repository, its credentials, and the signed release bundle is a separate
+owner-approved step.
+
+</details>
+
+Registry publication is not implied by a green CI: use the installation method documented above.
+
+## 🤝 Contributing
+
+Contributions are always welcome! 💙
+
+Whether you're fixing a typo, improving documentation, adding tests, or making pikaid even better, every contribution is appreciated.
+
+**Want to help? Here's how:**
+
+- 🐛 **Found a bug?** [Open an issue](https://github.com/pikaid/pikaid-kotlin/issues) with clear reproduction steps.
+- 💡 **Have an idea?** Start with an issue before making major changes.
+- 🛠️ **Ready to contribute?** Open a pull request explaining your changes.
+- 🧪 **Keep it tested.** Add meaningful regression tests for behavior changes and follow the existing conventions.
+- ✅ **Make sure CI passes.** All required checks must be green before a pull request is merged. No shortcuts!
+
+**One important rule:** pikaid's identifier format is immutable. Contributions must preserve the [canonical specification (revision 1.0.4)](https://github.com/pikaid/pikaid-specs/tree/v1.0.4).
+
+🔐 **Found a security vulnerability?** Report it privately using GitHub's security reporting (when available), or [contact the maintainer](mailto:larananas.dev@proton.me)—not through a public issue.
+
+**Every improvement matters, big or small. Thanks for helping make pikaid better!** 🐇
+
+## 📄 License
+
+The implementation is available under the [MIT License](LICENSE).
+
+## ✉️ Contact
+
+For licensing or project-related questions: [larananas.dev@proton.me](mailto:larananas.dev@proton.me).
+
