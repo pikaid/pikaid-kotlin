@@ -155,7 +155,6 @@ publishing {
     }
 }
 
-
 // Reuse the existing mavenJava publication, including the Dokka Javadoc JAR,
 // and let the Central Portal validate and automatically release the bundle.
 // The base plugin does not replace or duplicate the manually configured

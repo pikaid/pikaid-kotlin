@@ -30,6 +30,8 @@ jobs:
 
       - name: Set up Gradle and validate wrapper
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        with:
+          cache-disabled: true
 
       - name: Verify stable release version
         shell: bash
@@ -89,6 +91,8 @@ jobs:
 
       - name: Set up Gradle and validate wrapper
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
+        with:
+          cache-disabled: true
 
       - name: Publish signed artifacts and automatically release
         run: ./gradlew publishAndReleaseToMavenCentral --no-daemon --no-build-cache --console=plain
