@@ -17,7 +17,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.pikaid:pikaid-kotlin:1.0.0")
+    implementation("dev.pikaid:pikaid-kotlin:${providers.gradleProperty("pikaidVersion").getOrElse("1.0.0")}")
 }
 
 application {

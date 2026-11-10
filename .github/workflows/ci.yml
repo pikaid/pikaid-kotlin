@@ -243,6 +243,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a
 
+      - name: Determine library version for external consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(sed -nE 's/^version = "([0-9]+\.[0-9]+\.[0-9]+)"$/\1/p' build.gradle.kts)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          echo "PIKAID_VERSION=$version" >> "$GITHUB_ENV"
+
       - name: Publish to the local Maven repository
         shell: bash
         run: >
@@ -253,10 +261,10 @@ jobs:
         shell: bash
         run: >
           ./gradlew -p ci/consumers/java run
-          -PconsumerToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain
+          -PconsumerToolchain=${{ matrix.java }} -PpikaidVersion="$PIKAID_VERSION" --no-daemon --no-build-cache --console=plain
 
       - name: Compile and run the Kotlin consumer
         shell: bash
         run: >
           ./gradlew -p ci/consumers/kotlin run
-          -PconsumerToolchain=${{ matrix.java }} --no-daemon --no-build-cache --console=plain
+          -PconsumerToolchain=${{ matrix.java }} -PpikaidVersion="$PIKAID_VERSION" --no-daemon --no-build-cache --console=plain
